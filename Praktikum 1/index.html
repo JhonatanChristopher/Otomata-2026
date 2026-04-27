@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Token Analyzer</title>
+
+<style>
+    body {
+        font-family: Arial;
+        background: #1e1e1e;
+        color: white;
+        text-align: center;
+        padding: 40px;
+    }
+
+    textarea {
+        width: 60%;
+        height: 120px;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .result {
+        margin-top: 20px;
+        background: #2e2e2e;
+        padding: 20px;
+        border-radius: 10px;
+        display: inline-block;
+        text-align: left;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Praktikum 1 : Token Analyzer</h1>
+
+<textarea id="code" placeholder="Masukkan kode di sini..."></textarea><br>
+<button onclick="analyze()">Analyze</button>
+
+<div id="result"></div>
+
+<script>
+const RESERVED_WORDS = [
+    "if", "else", "while", "for", "return",
+    "int", "float", "double", "char", "void"
+];
+
+function addUnique(arr, item) {
+    if (!arr.includes(item)) {
+        arr.push(item);
+    }
+}
+
+function analyze() {
+    const code = document.getElementById("code").value;
+
+    let variables = [];
+    let reserved = [];
+    let operators = [];
+    let symbols = [];
+    let numbers = [];
+    let unknown = [];
+
+    // Token regex diperluas biar nangkep semua termasuk simbol aneh
+    const tokens = code.match(/\d+(\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*|[\+\-\*\/=<>!]+|[()\{\}\[\];,]|./g) || [];
+
+    tokens.forEach(token => {
+        if (/^\s+$/.test(token)) return;
+
+        if (/^\d/.test(token)) {
+            addUnique(numbers, token);
+        }
+        else if (RESERVED_WORDS.includes(token)) {
+            addUnique(reserved, token);
+        }
+        else if (/^[a-zA-Z_]/.test(token)) {
+            addUnique(variables, token);
+        }
+        else if (/^[\+\-\*\/=<>!]+$/.test(token)) {
+            addUnique(operators, token);
+        }
+        else if (/^[()\{\}\[\];,]$/.test(token)) {
+            addUnique(symbols, token);
+        }
+        else {
+            addUnique(unknown, token);
+        }
+    });
+
+    let output = "";
+
+    function render(label, data) {
+        if (data.length > 0) {
+            output += `<p><b>${label}:</b> ${data.join(" ")}</p>`;
+        }
+    }
+
+    render("Reserved Words", reserved);
+    render("Variabel", variables);
+    render("Operator", operators);
+    render("Simbol", symbols);
+    render("Angka", numbers);
+    render("Unknown", unknown);
+
+    document.getElementById("result").innerHTML =
+        `<div class="result">${output}</div>`;
+}
+</script>
+
+</body>
+</html>
