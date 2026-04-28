@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automata FSM Visualizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            max-width: 650px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        input[type="text"]:focus {
+            border-color: #3498db;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 0.9em;
+            text-align: center;
+            display: none;
+            margin-bottom: 15px;
+        }
+        
+        /* Area SVG FSM */
+        .fsm-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+        }
+        svg {
+            width: 100%;
+            max-width: 550px;
+            height: auto;
+        }
+        
+        /* State Aktif saat dianimasikan */
+        .state-circle {
+            transition: all 0.3s ease;
+        }
+        .active-state {
+            fill: #f1c40f !important;
+            stroke: #e67e22 !important;
+            stroke-width: 4px !important;
+        }
+        
+        /* Log Pengerjaan */
+        .log-box {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 15px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-box {
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            display: none;
+        }
+        .accepted {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>FSM Visualizer</h2>
+    <p class="subtitle">Akhiran '1' & Tanpa substring '00'</p>
+    
+    <div class="input-group">
+        <input type="text" id="inputString" placeholder="Ketik angka (ex: 1011)" oninput="validateInput()">
+        <button onclick="startAnimation()" id="checkBtn">Mulai Proses</button>
+    </div>
+    <div id="errorMsg" class="error">Hanya masukkan angka 0 dan 1!</div>
+
+    <div class="fsm-container">
+        <svg viewBox="0 0 600 350">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+            </defs>
+
+            <path d="M 20 175 L 65 175" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+            
+            <path d="M 115 160 L 275 85" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="180" y="110" font-weight="bold">0</text>
+
+            <path d="M 115 190 L 275 265" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="180" y="245" font-weight="bold">1</text>
+
+            <path d="M 290 100 L 290 240" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="270" y="175" font-weight="bold">1</text>
+
+            <path d="M 310 240 L 310 100" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="320" y="175" font-weight="bold">0</text>
+
+            <path d="M 325 75 L 465 75" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="395" y="65" font-weight="bold">0</text>
+
+            <path d="M 505 55 C 530 15, 560 45, 520 80" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+            <text x="540" y="40" font-weight="bold">0, 1</text>
+
+            <path d="M 315 290 C 360 340, 240 340, 285 290" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+            <text x="300" y="345" font-weight="bold">1</text>
+
+            <g id="group-S">
+                <circle id="node-S" class="state-circle" cx="95" cy="175" r="25" fill="#fff" stroke="#333" stroke-width="2"/>
+                <text x="95" y="181" text-anchor="middle" font-size="18" font-weight="bold">S</text>
+            </g>
+
+            <g id="group-A">
+                <circle id="node-A" class="state-circle" cx="300" cy="75" r="25" fill="#fff" stroke="#333" stroke-width="2"/>
+                <text x="300" y="81" text-anchor="middle" font-size="18" font-weight="bold">A</text>
+            </g>
+
+            <g id="group-B">
+                <circle id="node-B" class="state-circle" cx="300" cy="275" r="25" fill="#fff" stroke="#333" stroke-width="2"/>
+                <circle cx="300" cy="275" r="20" fill="none" stroke="#333" stroke-width="2"/>
+                <text x="300" y="281" text-anchor="middle" font-size="18" font-weight="bold">B</text>
+            </g>
+
+            <g id="group-C">
+                <circle id="node-C" class="state-circle" cx="490" cy="75" r="25" fill="#fff" stroke="#333" stroke-width="2"/>
+                <text x="490" y="81" text-anchor="middle" font-size="18" font-weight="bold">C</text>
+            </g>
+        </svg>
+    </div>
+
+    <div id="logBox" class="log-box">
+        Silakan masukkan string dan klik "Mulai Proses"
+    </div>
+
+    <div id="resultBox" class="result-box"></div>
+</div>
+
+<script>
+    // Validasi input
+    function validateInput() {
+        const inputStr = document.getElementById('inputString').value;
+        const errorMsg = document.getElementById('errorMsg');
+        const checkBtn = document.getElementById('checkBtn');
+        
+        if (inputStr.length > 0 && !/^[01]+$/.test(inputStr)) {
+            errorMsg.style.display = 'block';
+            checkBtn.disabled = true;
+        } else {
+            errorMsg.style.display = 'none';
+            checkBtn.disabled = false;
+        }
+    }
+
+    // Fungsi delay untuk animasi (jeda sekian milidetik)
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Menghapus efek warna kuning (reset) pada semua state
+    function resetNodes() {
+        document.querySelectorAll('.state-circle').forEach(node => {
+            node.classList.remove('active-state');
+        });
+    }
+
+    // Fungsi utama Asinkron agar bisa menjalankan animasi delay
+    async function startAnimation() {
+        const inputStr = document.getElementById('inputString').value;
+        const checkBtn = document.getElementById('checkBtn');
+        const logBox = document.getElementById('logBox');
+        const resultBox = document.getElementById('resultBox');
+
+        if (inputStr.length === 0) {
+            alert("String masih kosong!");
+            return;
+        }
+
+        // Kunci tombol saat animasi berjalan
+        checkBtn.disabled = true;
+        resultBox.style.display = 'none';
+        resetNodes();
+
+        let currentState = 'S';
+        
+        // Sorot state Start pertama kali
+        document.getElementById(`node-${currentState}`).classList.add('active-state');
+        logBox.innerHTML = `Posisi Awal: State <b>${currentState}</b>`;
+        await delay(1000); // Jeda 1 detik
+
+        for (let i = 0; i < inputStr.length; i++) {
+            let char = inputStr[i];
+            let prevState = currentState;
+
+            // Logika FSM Automata
+            if (currentState === 'S') {
+                currentState = (char === '0') ? 'A' : 'B';
+            } 
+            else if (currentState === 'A') {
+                currentState = (char === '0') ? 'C' : 'B';
+            } 
+            else if (currentState === 'B') {
+                currentState = (char === '0') ? 'A' : 'B';
+            } 
+            else if (currentState === 'C') {
+                currentState = 'C'; 
+            }
+
+            // Animasi UI
+            resetNodes();
+            document.getElementById(`node-${currentState}`).classList.add('active-state');
+            
+            // Format teks log yang rapi
+            logBox.innerHTML = `Membaca input '<b>${char}</b>' <br> Bergerak dari State <b>${prevState}</b> &rarr; State <b>${currentState}</b>`;
+            
+            // Jeda 1 detik per karakter agar user bisa mengikuti pergerakannya
+            await delay(1000);
+        }
+
+        // Cek hasil akhir
+        const isAccepted = (currentState === 'B');
+        
+        logBox.innerHTML = `Selesai membaca. Berhenti di State <b>${currentState}</b>`;
+        resultBox.style.display = 'block';
+
+        if (isAccepted) {
+            resultBox.className = 'result-box accepted';
+            resultBox.innerHTML = "✅ DITERIMA (Memenuhi syarat: Akhiran 1 & Tanpa '00')";
+        } else {
+            resultBox.className = 'result-box rejected';
+            resultBox.innerHTML = "❌ DITOLAK (Melanggar syarat bahasa L)";
+        }
+
+        checkBtn.disabled = false;
+    }
+</script>
+
+</body>
+</html>
